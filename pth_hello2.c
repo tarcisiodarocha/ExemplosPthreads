@@ -20,8 +20,6 @@
 #include <pthread.h> 
 #include <unistd.h>
 
-const int MAX_THREADS = 64;
-
 /* Global variable:  accessible to all threads */
 int thread_count;  
 
