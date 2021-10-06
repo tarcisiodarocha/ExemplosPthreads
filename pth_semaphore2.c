@@ -1,36 +1,26 @@
 /* Arquivo:  
- *    pth_lembrete.c
+ *    pth_semaphore2.c
  *
  * Propósito:
- *    Implementar um gerenciador de lembretes de medicamentos usando 
- *    pthreads. Cada thread fica responsável por lembrar o usuário de
- *    um único medicamento.
+ *    Exemplificar o uso de semáforo como mutex.
  *
- * Input:
- *    nenhum
- * Output:
- *    Mensagens de cada thread lembrando o usuário de tomar o medicamento.  
  *
- * Compile:  gcc -g -Wall -o pth_lembrete pth_lembrete.c -lpthread
- * Usage:    ./pth_lembrete 
+ * Compile:  gcc -g -Wall -o pth_semaphore2 pth_semaphore2.c -lpthread -lrt
+ * Usage:    ./pth_semaphore2 
  *
  */
 #include <stdio.h>
-#include <stdlib.h>
 #include <pthread.h> 
-#include <unistd.h>
-#include <string.h>
-#include <time.h>
-
+#include <semaphore.h>
 
 int publico = 0;
 
-pthread_mutex_t mutex;
+sem_t semaphore; 
 
 void incPublico(){
-   pthread_mutex_lock(&mutex);
+   sem_wait(&semaphore);
    publico++;
-   pthread_mutex_unlock(&mutex);
+   sem_post(&semaphore);
 }
 
 void *execute() {
@@ -47,7 +37,7 @@ void *execute() {
 int main(int argc, char* argv[]) {
    pthread_t t1, t2, t3, t4; 
    
-   pthread_mutex_init(&mutex, NULL);
+   sem_init(&semaphore, 0, 1);
 
    // Criação e execução das threads
    pthread_create(&t1, NULL, execute, NULL);  
@@ -62,7 +52,8 @@ int main(int argc, char* argv[]) {
    pthread_join(t4, NULL); 
 
    printf("Público final: %d\n", publico);
-   pthread_mutex_destroy(&mutex);
+
+   sem_destroy(&semaphore);
 
    return 0;
 }  /* main */

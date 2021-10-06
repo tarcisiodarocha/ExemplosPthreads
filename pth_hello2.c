@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
    printf("Hello from the main thread\n");
    //sleep(10);
    for (thread = 0; thread < thread_count; thread++){ 
-      pthread_join(thread_handles[thread], NULL); 
+      pthread_join(thread_handles[thread], NULL); // Bloqueante
       printf("Thread %ld joined!\n", thread);
    }
    
@@ -53,9 +53,8 @@ int main(int argc, char* argv[]) {
 /*-------------------------------------------------------------------*/
 void *Hello(void* rank) {
    long my_rank = (long) rank;  /* Use long in case of 64-bit system */ 
-
    printf("Hello from thread %ld of %d\n", my_rank, thread_count);
-   sleep(my_rank);
+   //sleep(my_rank);
    printf("Thread %ld of %d exit!\n", my_rank, thread_count);
    return NULL;
 }  /* Hello */
