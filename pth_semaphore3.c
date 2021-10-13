@@ -34,6 +34,7 @@ int main(int argc, char* argv[]) {
    long       thread;  /* Use long in case of a 64-bit system */
    pthread_t* thread_handles; 
    srand(0);
+   
    sem_init(&semaphore, 0, 4);
    
    long thread_count = 40; 
@@ -53,6 +54,7 @@ int main(int argc, char* argv[]) {
    }
    
    free(thread_handles);
+   sem_destroy(&semaphore);
    printf("Main thread exit\n");
    return 0;
 }  /* main */

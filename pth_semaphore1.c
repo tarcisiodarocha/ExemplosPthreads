@@ -18,10 +18,20 @@ sem_t semaphore;
 
 /*--------------------------------------------------------------------*/
 int main(int argc, char* argv[]) {
-   sem_init(&semaphore, 0, 0);
+   sem_init(&semaphore, 0, 2);
 
    //sem_post(&semaphore);
    
+   printf("Waiting...\n");
+   sem_wait(&semaphore);
+   printf("PASS\n\n");
+   
+   sem_post(&semaphore);
+
+   printf("Waiting...\n");
+   sem_wait(&semaphore);
+   printf("PASS\n\n");
+
    printf("Waiting...\n");
    sem_wait(&semaphore);
    printf("PASS\n\n");
