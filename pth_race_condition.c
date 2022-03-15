@@ -25,12 +25,8 @@
 
 int publico = 0;
 
-pthread_mutex_t mutexPublico;
-
 void incPublico(){
-   pthread_mutex_lock(&mutexPublico); //bloqueante
    publico++; // Região crítica
-   pthread_mutex_unlock(&mutexPublico);
 }
 
 void *execute() {
@@ -47,7 +43,6 @@ void *execute() {
 int main(int argc, char* argv[]) {
    pthread_t t1, t2, t3, t4; 
    
-   pthread_mutex_init(&mutexPublico, NULL);
    
    // Criação e execução das threads
    pthread_create(&t1, NULL, execute, NULL);  
@@ -63,7 +58,7 @@ int main(int argc, char* argv[]) {
    
    printf("Público final: %d\n", publico);
 
-   pthread_mutex_destroy(&mutexPublico);
+
    return 0;
 }  /* main */
 
