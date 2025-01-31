@@ -35,6 +35,10 @@ int main(int argc, char* argv[]) {
    printf("Waiting...\n");
    sem_wait(&semaphore);
    printf("PASS\n\n");
+   
+   printf("Waiting...\n");
+   sem_wait(&semaphore);
+   printf("PASS\n\n");
 
    sem_destroy(&semaphore);
    return 0;

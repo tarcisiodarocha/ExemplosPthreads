@@ -1,10 +1,8 @@
 /* Arquivo:  
- *    pth_lembrete.c
+ *    pth_race_condition.c
  *
  * Propósito:
- *    Implementar um gerenciador de lembretes de medicamentos usando 
- *    pthreads. Cada thread fica responsável por lembrar o usuário de
- *    um único medicamento.
+ *    Implementar um contador de público .
  *
  * Input:
  *    nenhum
@@ -32,7 +30,7 @@ void incPublico(){
 void *execute() {
    int i;
 
-   for  (i = 1; i <= 1000000; i++){
+   for  (i = 1; i <= 200000; i++){
       incPublico();
    }
    return NULL;

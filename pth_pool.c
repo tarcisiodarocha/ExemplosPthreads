@@ -39,6 +39,7 @@ Task getTask(){
    pthread_mutex_lock(&mutex);
    
    while (taskCount == 0){
+      
       pthread_cond_wait(&condEmpty, &mutex);
    }
    
@@ -58,6 +59,7 @@ void submitTask(Task task){
    pthread_mutex_lock(&mutex);
 
    while (taskCount == BUFFER_SIZE){
+      
       pthread_cond_wait(&condFull, &mutex);
    }
 
@@ -112,7 +114,7 @@ void *startThread(void* args) {
    while (1){ 
       Task task = getTask();
       executeTask(&task, id);
-      sleep(rand()%5);
+      //sleep(rand()%5);
    }
    return NULL;
 } 
