@@ -1,62 +1,74 @@
-/* Arquivo:  
- *    pth_semaphore2.c
+/*
+ * Arquivo:    pth_semaphore3.c
+ * Propósito:  Demonstrar o uso de semáforos para limitar a quantidade
+ *             de threads em execução simultânea
  *
- * Propósito:
- *    Exemplificar o uso de semáforo como limitador do número
- *    de threads que executa paralelamente.
+ * Descrição:  Cria 40 threads mas limita a 4 threads concorrentes
+ *             usando um semáforo contador. Cada thread executa por
+ *             um tempo aleatório entre 2-6 segundos.
  *
+ * Compilar:   gcc -Wall -o pth_semaphore3 pth_semaphore3.c -lpthread
+ * Executar:   ./pth_semaphore3
  *
- * Compile:  gcc -g -Wall -o pth_semaphore3 pth_semaphore3.c -lpthread -lrt
- * Usage:    ./pth_semaphore3 
- *
+ * Funcionamento:
+ *   1. Inicializa semáforo com valor 4 (limite de threads concorrentes)
+ *   2. Cria 40 threads, mas apenas 4 podem executar simultaneamente
+ *   3. Cada thread executa por tempo aleatório (2-6 segundos)
+ *   4. Thread principal aguarda término de todas as threads
  */
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <pthread.h> 
+#include <pthread.h>
 #include <semaphore.h>
 #include <time.h>
 #include <unistd.h>
 
-sem_t semaphore; 
+#define MAX_THREADS 40
+#define MAX_CONCURRENT 4
 
+sem_t semaphore;  // Semáforo para controle de concorrência
+
+/* Função executada por cada thread */
 void *execute(void *args) {
-   long id = (long) args;
-   printf("Thread %ld running\n", id);
-   sleep((rand() % 5) + 1);
-   printf("Thread %ld finish\n", id);
-   sem_post(&semaphore);
+   long id = (long)args;
+   int sleep_time = (rand() % 5) + 2;  // Tempo aleatório 2-6 segundos
+   
+   printf("Thread %ld iniciada (executando por %ds)\n", id, sleep_time);
+   sleep(sleep_time);
+   printf("Thread %ld finalizada\n", id);
+   
+   sem_post(&semaphore);  // Libera uma vaga no semáforo
    return NULL;
-} 
+}
 
-
-/*--------------------------------------------------------------------*/
-int main(int argc, char* argv[]) {
-   long       thread;  /* Use long in case of a 64-bit system */
-   pthread_t* thread_handles; 
-   srand(0);
+int main() {
+   pthread_t thread_handles[MAX_THREADS];
    
-   sem_init(&semaphore, 0, 4);
+   // Inicializa gerador de números aleatórios
+   srand(time(NULL));
    
-   long thread_count = 40; 
-
-   thread_handles = malloc (thread_count*sizeof(pthread_t)); 
-
-   for (thread = 0; thread < thread_count; thread++){  
-      sem_wait(&semaphore);
-      pthread_create(&thread_handles[thread], NULL, execute, (void*) thread);  
+   // Inicializa semáforo permitindo MAX_CONCURRENT threads concorrentes
+   sem_init(&semaphore, 0, MAX_CONCURRENT);
+   
+   // Cria todas as threads
+   for (long thread = 0; thread < MAX_THREADS; thread++) {
+      sem_wait(&semaphore);  // Aguarda vaga disponível
+      pthread_create(&thread_handles[thread], NULL, execute, (void*)thread);
    }
    
-   printf("Hello from the main thread\n");
-   //sleep(10);
-   for (thread = 0; thread < thread_count; thread++){ 
-      pthread_join(thread_handles[thread], NULL); // Bloqueante
-      printf("Thread %ld joined!\n", thread);
+   printf("Thread principal: todas as threads criadas\n");
+   
+   // Aguarda término de todas as threads
+   for (long thread = 0; thread < MAX_THREADS; thread++) {
+      pthread_join(thread_handles[thread], NULL);
+      printf("Thread %ld finalizada e liberada\n", thread);
    }
    
-   free(thread_handles);
+   // Libera recursos
    sem_destroy(&semaphore);
-   printf("Main thread exit\n");
+   printf("Thread principal: programa encerrado\n");
+   
    return 0;
-}  /* main */
-
+}
 

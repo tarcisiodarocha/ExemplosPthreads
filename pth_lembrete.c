@@ -1,99 +1,81 @@
-/* Arquivo:  
- *    pth_lembrete.c
+/*
+ * Arquivo:    pth_lembrete.c
+ * Propósito:  Sistema de gerenciamento de medicamentos com lembretes periódicos
+ *             usando threads. Cada medicamento é gerenciado por uma thread separada
+ *             que emite alertas no horário correto.
  *
- * Propósito:
- *    Implementar um gerenciador de lembretes de medicamentos usando 
- *    pthreads. Cada thread fica responsável por lembrar o usuário de
- *    um único medicamento.
+ * Entrada:    Nenhuma (dados dos medicamentos estão hardcoded no programa)
+ * Saída:      Mensagens de lembrete para cada medicamento no intervalo especificado
  *
- * Input:
- *    nenhum
- * Output:
- *    Mensagens de cada thread lembrando o usuário de tomar o medicamento.  
+ * Compilar:   gcc -Wall -o pth_lembrete pth_lembrete.c -lpthread
+ * Executar:   ./pth_lembrete
  *
- * Compile:  gcc -g -Wall -o pth_lembrete pth_lembrete.c -lpthread
- * Usage:    ./pth_lembrete 
+ * Funcionamento:
+ *   1. Cria uma thread para cada medicamento
+ *   2. Cada thread imprime lembretes no intervalo especificado
+ *   3. Mostra o horário exato de cada alerta
+ *   4. Finaliza após completar todos os lembretes de cada medicamento
  *
+ * Estrutura:
+ *   - Cada medicamento tem nome, intervalo entre doses e total de doses
+ *   - Threads executam concorrentemente
+ *   - Uso de time() para mostrar horários reais
  */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h> 
 #include <unistd.h>
-#include <string.h>
 #include <time.h>
 
+typedef struct {
+    char nome[50];
+    int intervalo;
+    int total;
+} Medicacao;
 
-struct Medicacao{
-   char nome[50];
-   int intervalo;
-   int total;
-}; 
+void *Lembrete(void* medicacao);
 
-void *Lembrete(void* medicacao);  /* Thread function */
+int main() {
+    printf("Sistema de Lembretes Iniciado\n");
+    printf("=============================\n");
 
-/*--------------------------------------------------------------------*/
-int main(int argc, char* argv[]) {
-   printf("Gerenciador de lembretes iniciado!!\n");
-   printf("====================================\n");
+    pthread_t threads[4];
+    Medicacao meds[4] = {
+        {"Paracetamol", 8, 10},
+        {"Dorflex", 6, 12},
+        {"Cataflan", 12, 8},
+        {"Vitamina B12", 24, 6}
+    };
 
-   pthread_t t1, t2, t3, t4; 
-   struct Medicacao *m1, *m2, *m3, *m4;
-   
-   // Medicação 1
-   m1 = malloc(sizeof(struct Medicacao));
-   strcpy(m1->nome, "Paracetamol");
-   m1->intervalo = 8;
-   m1->total =  10;
+    for (int i = 0; i < 4; i++) {
+        pthread_create(&threads[i], NULL, Lembrete, &meds[i]);
+    }
 
-   // Medicação 2
-   m2 = malloc(sizeof(struct Medicacao));
-   strcpy(m2->nome, "Dorflex");
-   m2->intervalo = 6;
-   m2->total = 12;
+    for (int i = 0; i < 4; i++) {
+        pthread_join(threads[i], NULL);
+    }
 
-   // Medicação 3
-   m3 = malloc(sizeof(struct Medicacao));
-   strcpy(m3->nome, "Cataflan");
-   m3->intervalo = 12;
-   m3->total = 8;
-   
-   // Medicação 4
-   m4 = malloc(sizeof(struct Medicacao));
-   strcpy(m4->nome, "B12");
-   m4->intervalo = 24;
-   m4->total = 6;
+    printf("\n=============================\n");
+    printf("Todos os lembretes concluídos!\n");
+    return 0;
+}
 
-   // Criação e execução das threads
-   pthread_create(&t1, NULL, Lembrete, (void*) m1);  
-   pthread_create(&t2, NULL, Lembrete, (void*) m2);  
-   pthread_create(&t3, NULL, Lembrete, (void*) m3);  
-   pthread_create(&t4, NULL, Lembrete, (void*) m4);  
-   
-   // Espera pela finalização das threads
-   pthread_join(t1, NULL); 
-   pthread_join(t2, NULL); 
-   pthread_join(t3, NULL); 
-   pthread_join(t4, NULL); 
-
-   printf("=====================================\n");
-   printf("Gerenciador de lembretes finalizado!!\n");
-   return 0;
-}  /* main */
-
-/*-------------------------------------------------------------------*/
 void *Lembrete(void* medicacao) {
-   struct Medicacao *med = (struct Medicacao*) medicacao; 
-   
-   int i;
-   time_t t;   
-   
-   for  (i = 1; i <= med->total; i++){
-      time(&t);
-      printf("Tomar %s %d/%d ## %s", med->nome, i, med->total, ctime(&t));
-      sleep(med->intervalo);
-   }
-   printf("FIM: %s\n", med->nome);
-   free(med);
-   return NULL;
-}  /* Lembrete */
-
+    Medicacao *med = (Medicacao*)medicacao;
+    time_t t;
+    struct tm *tm_info;
+    
+    for (int i = 1; i <= med->total; i++) {
+        time(&t);
+        tm_info = localtime(&t);
+        printf("[%02d:%02d:%02d] Tome %s (%d/%d)\n", 
+               tm_info->tm_hour, tm_info->tm_min, tm_info->tm_sec,
+               med->nome, i, med->total);
+        
+        sleep(med->intervalo);
+    }
+    
+    printf("--> %s finalizado\n", med->nome);
+    return NULL;
+}

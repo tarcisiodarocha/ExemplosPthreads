@@ -1,42 +1,50 @@
-/* Arquivo:  
- *    pth_reserva_cinema.c
+/*
+ * Arquivo:    pth_race_condition2.c
+ * Propósito:  Demonstrar condição de corrida (race condition) em um sistema
+ *             de reservas de cinema com múltiplos caixas
  *
- * Propósito:
- *    Implementar um sistema de reservas de assentos para um cinema com múltiplos caixas,
- *    demonstrando uma condição de corrida (race condition) e a necessidade de sincronização.
+ * Descrição:  Simula dois caixas reservando assentos simultaneamente sem
+ *             sincronização, resultando em inconsistência nos assentos disponíveis
  *
- * Input:
- *    nenhum (valores de reserva hardcoded no exemplo)
- * Output:
- *    Mensagens mostrando o processo de reserva e assentos disponíveis,
- *    demonstrando o problema da race condition quando não sincronizado.
+ * Compilar:   gcc -Wall -o pth_race_condition2 pth_race_condition2.c -lpthread
+ * Executar:   ./pth_race_condition2
  *
- * Compile:  gcc -g -Wall -o pth_reserva_cinema pth_reserva_cinema.c -lpthread
- * Usage:    ./pth_reserva_cinema 
+ * Funcionamento:
+ *   1. Cinema com 100 assentos disponíveis
+ *   2. Dois caixas tentam reservar 60 assentos cada
+ *   3. Sem sincronização, ambos podem achar que há assentos suficientes
+ *   4. Resultado final incorreto (assentos negativos)
  *
- * Observação:
- *    Este código intencionalmente contém uma race condition para fins didáticos.
- *    A solução com mutex deve ser implementada pelos alunos.
+ * Observações:
+ *   - Código contém race condition intencional para fins didáticos
+ *   - Solução requer mutex ou outro mecanismo de sincronização
+ *   - sleep(1) torna a race condition mais visível
  */
+
 #include <stdio.h>
 #include <pthread.h>
+#include <unistd.h>
 
 #define TOTAL_ASSENTOS 100
 
-int assentos_disponiveis = TOTAL_ASSENTOS;
+int assentos_disponiveis = TOTAL_ASSENTOS;  // Variável compartilhada
 
+/* Função de reserva com race condition */
 void* reservar_assentos(void* arg) {
     int quantidade = *((int*)arg);
     
+    // Verificação não sincronizada
     if (quantidade <= assentos_disponiveis) {
-        // Simula processamento da reserva
+        printf("Processando reserva de %d assentos...\n", quantidade);
+        
+        // Simula tempo de processamento (torna race condition mais evidente)
         sleep(1);
         
-        printf("Reservando %d assentos...\n", quantidade);
+        // Atualização não segura da variável compartilhada
         assentos_disponiveis -= quantidade;
-        printf("Reserva concluída. Assentos restantes: %d\n", assentos_disponiveis);
+        printf("Reserva confirmada. Assentos restantes: %d\n", assentos_disponiveis);
     } else {
-        printf("Não há assentos suficientes. Requeridos: %d, Disponíveis: %d\n", 
+        printf("Reserva negada. Requeridos: %d, Disponíveis: %d\n", 
                quantidade, assentos_disponiveis);
     }
     
@@ -45,18 +53,21 @@ void* reservar_assentos(void* arg) {
 
 int main() {
     pthread_t caixa1, caixa2;
+    int reservas[] = {60, 60};  // Cada caixa tenta reservar 60 assentos
     
-    // Dois clientes tentando reservar 60 assentos cada
-    int reserva1 = 60;
-    int reserva2 = 60;
+    printf("Iniciando sistema de reservas (%d assentos disponíveis)\n", TOTAL_ASSENTOS);
     
-    pthread_create(&caixa1, NULL, reservar_assentos, &reserva1);
-    pthread_create(&caixa2, NULL, reservar_assentos, &reserva2);
+    // Cria threads para os dois caixas
+    pthread_create(&caixa1, NULL, reservar_assentos, &reservas[0]);
+    pthread_create(&caixa2, NULL, reservar_assentos, &reservas[1]);
     
+    // Aguarda finalização das threads
     pthread_join(caixa1, NULL);
     pthread_join(caixa2, NULL);
     
-    printf("Assentos finais disponíveis: %d\n", assentos_disponiveis);
+    // Mostra resultado final (potencialmente incorreto)
+    printf("\nAssentos finais disponíveis: %d (deveria ser %d)\n", 
+           assentos_disponiveis, TOTAL_ASSENTOS - reservas[0] - reservas[1]);
     
     return 0;
 }

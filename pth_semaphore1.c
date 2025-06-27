@@ -1,47 +1,59 @@
-/* Arquivo:  
- *    pth_semaphore1.c
+/*
+ * Arquivo:    pth_semaphore1.c
+ * Propósito:  Demonstrar operações básicas de semáforo (wait/post) sem threads
+ *             Mostra o controle de acesso a recursos limitados usando semáforos
  *
- * Propósito:
- *    Experimentar as funções básicas de um semáforo sem o uso de threads
+ * Compilar:   gcc -Wall -o pth_semaphore1 pth_semaphore1.c -lpthread
+ * Executar:   ./pth_semaphore1
  *
- * Compile:  gcc -g -Wall -o pth_semaphore1 pth_semaphore.c -lpthread -lrt
- * Usage:    ./pth_semaphore1
- *
+ * Funcionamento:
+ *   1. Inicializa semáforo com valor 2 (permite 2 acessos simultâneos)
+ *   2. Demonstra sequência de operações wait/post
+ *   3. Mostra o comportamento quando o semáforo atinge zero
+ *   4. Inclui sem_post para liberar recursos e evitar deadlock
  */
-#include <stdio.h>
-#include <pthread.h> 
-#include <semaphore.h> 
 
+#include <stdio.h>
+#include <semaphore.h>
 
 sem_t semaphore;
 
+int main() {
+    // Inicializa semáforo permitindo 2 acessos concorrentes
+    sem_init(&semaphore, 0, 2);
+    printf("Semáforo inicializado (valor=2)\n\n");
 
-/*--------------------------------------------------------------------*/
-int main(int argc, char* argv[]) {
-   sem_init(&semaphore, 0, 2);
+    // Primeiro acesso - permitido (valor->1)
+    printf("[1] sem_wait...\n");
+    sem_wait(&semaphore);
+    printf("[1] PASS (valor=1)\n\n");
 
-   //sem_post(&semaphore);
-   
-   printf("Waiting...\n");
-   sem_wait(&semaphore);
-   printf("PASS\n\n");
-   
-   sem_post(&semaphore);
+    // Segundo acesso - permitido (valor->0)
+    printf("[2] sem_wait...\n");
+    sem_wait(&semaphore);
+    printf("[2] PASS (valor=0)\n\n");
 
-   printf("Waiting...\n");
-   sem_wait(&semaphore);
-   printf("PASS\n\n");
+    // Terceiro acesso - bloquearia (valor=0), mas vamos liberar primeiro
+    printf("[3] sem_post (liberando 1 acesso)\n");
+    sem_post(&semaphore);  // Valor volta para 1
+    printf("[3] sem_wait...\n");
+    sem_wait(&semaphore);
+    printf("[3] PASS (valor=0)\n\n");
 
-   printf("Waiting...\n");
-   sem_wait(&semaphore);
-   printf("PASS\n\n");
-   
-   printf("Waiting...\n");
-   sem_wait(&semaphore);
-   printf("PASS\n\n");
+    // Quarto acesso - ainda bloquearia
+    printf("[4] sem_post (liberando mais 1 acesso)\n");
+    sem_post(&semaphore);  // Valor volta para 1
+    printf("[4] sem_wait...\n");
+    sem_wait(&semaphore);
+    printf("[4] PASS (valor=0)\n\n");
 
-   sem_destroy(&semaphore);
-   return 0;
-}  /* main */
+    // Liberação final
+    printf("Liberando todos os acessos...\n");
+    sem_post(&semaphore);
+    sem_post(&semaphore);
 
-
+    sem_destroy(&semaphore);
+    printf("Semáforo destruído\n");
+    
+    return 0;
+}
