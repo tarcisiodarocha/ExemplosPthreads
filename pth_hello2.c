@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
 void *Hello(void* rank) {
    long my_rank = (long) rank;  /* Use long in case of 64-bit system */ 
    printf("Hello from thread %ld of %d\n", my_rank, thread_count);
-   //sleep(my_rank);
+   sleep(2);
    printf("Thread %ld of %d exit!\n", my_rank, thread_count);
    return NULL;
 }  /* Hello */
