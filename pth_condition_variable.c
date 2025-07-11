@@ -46,15 +46,13 @@ void* execute()
     if (done == 1) {
         // Thread1 entra aqui
         done = 2;
+        // Está dormindo esperando um signal de cond1  
         printf("Thread %ld: Esperando por cond1...\n", pthread_self());
-        // Está dormindo esperando um signal de cond1
-        pthread_cond_wait(&cond1, &lock);
-        printf("Thread %ld: Recebeu sinal e foi liberada\n", pthread_self());
     }
     else {
         // Thread 2 entra aqui
-        printf("Thread %ld: Sinalizando cond1...\n", pthread_self());
         // A Thread2 envia um signal de cond1 -> Acorda a Thread1
+        printf("Thread %ld: Sinalizando cond1...\n", pthread_self());
         pthread_cond_signal(&cond1);
     }
  

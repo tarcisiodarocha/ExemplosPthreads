@@ -1,49 +1,57 @@
+/*
+ * Arquivo:    pth_hello1.c
+ * Propósito:  Exemplo simples de criação de threads com pthreads
+ *             Mostra a execução simultânea de duas threads junto com a thread principal
+ *
+ * Como compilar: gcc -o pth_hello1 pth_hello1.c -lpthread
+ * Como executar: ./pth_hello1
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <pthread.h> 
+#include <pthread.h>
 #include <unistd.h>
 
-void *Hello(void* param);  /* Thread function */
-void *Hello2(void* param);  /* Thread function */
-/*--------------------------------------------------------------------*/
-int main(int argc, char* argv[]) {
-   long t1_param = 10;
-   long t2_param = 15;
-   pthread_t t1;
-   pthread_t t2;
+/* Funções que as threads irão executar */
+void *Hello1(void* param);
+void *Hello2(void* param);
+
+int main() {
+   pthread_t t1, t2;
    
-   pthread_create(&t1, NULL, Hello, (void*) t1_param);  
-   pthread_create(&t2, NULL, Hello2, (void*) t2_param);  
- 
-   int i = 0;
-   for (i = 0; i < 5; i++){
+   /* Cria duas threads */
+   pthread_create(&t1, NULL, Hello1, (void*)10);  /* Thread 1 faz 10 iterações */
+   pthread_create(&t2, NULL, Hello2, (void*)15);  /* Thread 2 faz 15 iterações */
+   
+   /* Thread principal imprime 5 vezes */
+   for (int i = 0; i < 5; i++) {
       printf("Principal %d\n", i);
       sleep(1);
-   }   
- 
-   pthread_join(t1, NULL); 
-   pthread_join(t2, NULL); 
-
+   }
+   
+   /* Espera as threads terminarem */
+   pthread_join(t1, NULL);
+   pthread_join(t2, NULL);
+   
    return 0;
-}  /* main */
+}
 
-/*-------------------------------------------------------------------*/
-void *Hello(void* param) {
-   long my_id = (long) param;  /* Use long in case of 64-bit system */ 
-   int i = 0;
-   for (i = 0; i < my_id; i++){
-      printf("Hello %d\n", i);
+/* Thread 1 imprime "Hello1" 10 vezes */
+void *Hello1(void* param) {
+   int vezes = (int)param;
+   for (int i = 0; i < vezes; i++) {
+      printf("Hello1 %d\n", i);
       sleep(1);
-   }   
+   }
    return NULL;
-}  /* Hello */
+}
 
+/* Thread 2 imprime "Hello2" 15 vezes */
 void *Hello2(void* param) {
-   long my_id = (long) param;  /* Use long in case of 64-bit system */ 
-   int i = 0;
-   for (i = 0; i < my_id; i++){
+   int vezes = (int)param;
+   for (int i = 0; i < vezes; i++) {
       printf("Hello2 %d\n", i);
       sleep(1);
-   }   
+   }
    return NULL;
-}  /* Hello */
+}

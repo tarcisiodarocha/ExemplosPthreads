@@ -32,7 +32,7 @@ void incPublico(){
 void *execute() {
    int i;
 
-   for  (i = 1; i <= 1000000; i++){
+   for  (i = 1; i <= 100000; i++){
       incPublico();
    }
    return NULL;
