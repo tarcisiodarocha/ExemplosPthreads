@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
    };
    
    medicacao_t medicacao3 = {
-      "B12", 24, 6
+      "PILA", 24, 6
    };
    
    pthread_t t1, t2, t3;

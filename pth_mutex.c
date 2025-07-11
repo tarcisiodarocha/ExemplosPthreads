@@ -7,7 +7,7 @@
  *    nenhum
  * Output:
  *
- * Compile:  gcc -g -Wall -o pth_mutex1 pth_mutex1.c -lpthread
+ * Compile:  gcc -g -Wall -o pth_mutex pth_mutex.c -lpthread
  * Usage:    ./pth_mutex1 
  *
  */
